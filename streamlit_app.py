@@ -1,40 +1,29 @@
 import streamlit as st
-import numpy as np
+import pandas as pd
 import pickle
 
-# Load model
+# Load model and columns
 model = pickle.load(open("model.pkl", "rb"))
+columns = pickle.load(open("columns.pkl", "rb"))
 
-# Title
-st.title("❤️ Heart Disease Prediction App")
+st.set_page_config(page_title="House Price Prediction", page_icon="🏠")
 
-st.write("Enter patient details below:")
+st.title("🏠 Delhi House Price Prediction")
 
-# Input fields
-age = st.number_input("Age", min_value=1, max_value=100, value=25)
+user_input = {}
 
-sex = st.selectbox("Sex", ["Male", "Female"])
-sex = 1 if sex == "Male" else 0
+st.subheader("Enter Property Details")
 
-cp = st.number_input("Chest Pain Type (0-3)", min_value=0, max_value=3)
+for col in columns:
+    user_input[col] = st.number_input(
+        col,
+        value=0.0,
+        step=1.0
+    )
 
-trestbps = st.number_input("Resting Blood Pressure")
+if st.button("Predict Price"):
+    input_df = pd.DataFrame([user_input])
 
-chol = st.number_input("Cholesterol Level")
+    prediction = model.predict(input_df)
 
-thalach = st.number_input("Maximum Heart Rate")
-
-# Prediction button
-if st.button("Predict"):
-
-    # Create input array
-    input_data = np.array([[age, sex, cp, trestbps, chol, thalach]])
-
-    # Prediction
-    prediction = model.predict(input_data)
-
-    # Output
-    if prediction[0] > 0.5:
-        st.error("⚠️ High Risk of Heart Disease")
-    else:
-        st.success("✅ Low Risk of Heart Disease")
+    st.success(f"Estimated House Price: ₹{prediction[0]:,.2f}")
